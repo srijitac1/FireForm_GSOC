@@ -21,8 +21,32 @@ The result is hours of time saved per shift, per firefighter.
 - **Agnostic:** Works with any department's existing fillable PDF forms.
 - **AI-Powered:** Uses open-source, locally-run LLMs (Mistral) to extract data from natural language. No data ever needs to leave the local machine.
 - **Single Point of Entry:** Eliminates redundant data entry entirely.
+- **Batch Filing:** One transcript fills Police, Fire, and Ambulance PDFs simultaneously via `POST /forms/fill/batch`.
+- **Persistent Templates:** Pre-load PDFs into `src/templates/` and register them once — no re-upload needed.
 
 Open-Source (DPG): Built 100% with open-source tools to be a true Digital Public Good, freely available for any department to adopt and modify.
+
+## 📁 Project Structure
+
+```
+fireform/
+├── api/                  # FastAPI application
+│   ├── db/               # Database models and repositories
+│   ├── routes/           # API route handlers
+│   └── schemas/          # Pydantic request/response schemas
+├── src/                  # Core processing logic
+│   ├── templates/        # Pre-loaded fillable PDF templates (tracked)
+│   ├── outputs/          # Generated filled PDFs (gitignored)
+│   ├── profiles/         # Department field-mapping profiles
+│   ├── paths.py          # Central path resolution utilities
+│   ├── controller.py     # Orchestrates fill pipeline
+│   ├── file_manipulator.py
+│   ├── filler.py
+│   └── llm.py
+├── tests/                # Test suite (pytest + hypothesis)
+├── docs/                 # Additional documentation
+└── SETUP.md              # Setup guide for new contributors
+```
 
 ## 🤝 Code of Conduct
 

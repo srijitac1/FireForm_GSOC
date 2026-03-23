@@ -3,3 +3,7 @@
 venv
 .venv
 *.db
+
+# Generated filled PDFs — keep .gitkeep but ignore everything else
+src/outputs/*
+!src/outputs/.gitkeep
