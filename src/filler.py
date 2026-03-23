@@ -1,6 +1,7 @@
 from pdfrw import PdfReader, PdfWriter
 from src.llm import LLM
 from datetime import datetime
+from typing import Dict, Any
 
 
 class Filler:
@@ -9,8 +10,8 @@ class Filler:
 
     def fill_form(self, pdf_form: str, llm: LLM):
         """
-        Fill a PDF form with values from user_input using LLM.
-        Fields are filled in the visual order (top-to-bottom, left-to-right).
+        Fill a PDF form with values extracted via LLM.
+        Fields are filled in visual order (top-to-bottom, left-to-right).
         """
         output_pdf = (
             pdf_form[:-4]
@@ -19,16 +20,41 @@ class Filler:
             + "_filled.pdf"
         )
 
-        # Generate dictionary of answers from your original function
         t2j = llm.main_loop()
-        textbox_answers = t2j.get_data()  # This is a dictionary
+        textbox_answers = t2j.get_data()
 
-        answers_list = list(textbox_answers.values())
+        return self._write_pdf(pdf_form, output_pdf, list(textbox_answers.values()))
 
-        # Read PDF
+    def fill_form_with_data(self, pdf_form: str, data: Dict[str, Any]) -> str:
+        """
+        Fill a PDF form from a pre-extracted data dictionary.
+        Used by the batch endpoint so LLM extraction runs only once for all templates.
+
+        Fields are matched positionally (top-to-bottom, left-to-right) using the
+        values from `data` in insertion order — the same deterministic ordering
+        used by fill_form().
+
+        Args:
+            pdf_form: Path to the fillable PDF template.
+            data: Dict mapping field labels to extracted values.
+
+        Returns:
+            Path to the filled output PDF.
+        """
+        output_pdf = (
+            pdf_form[:-4]
+            + "_"
+            + datetime.now().strftime("%Y%m%d_%H%M%S")
+            + "_filled.pdf"
+        )
+        return self._write_pdf(pdf_form, output_pdf, list(data.values()))
+
+    def _write_pdf(self, pdf_form: str, output_pdf: str, answers_list: list) -> str:
+        """
+        Internal helper: write answers_list into pdf_form and save to output_pdf.
+        """
         pdf = PdfReader(pdf_form)
 
-        # Loop through pages
         for page in pdf.pages:
             if page.Annots:
                 sorted_annots = sorted(
@@ -43,10 +69,7 @@ class Filler:
                             annot.AP = None
                             i += 1
                         else:
-                            # Stop if we run out of answers
                             break
 
         PdfWriter().write(output_pdf, pdf)
-
-        # Your main.py expects this function to return the path
         return output_pdf
