@@ -12,6 +12,9 @@ def create_template(session: Session, template: Template) -> Template:
 def get_template(session: Session, template_id: int) -> Template | None:
     return session.get(Template, template_id)
 
+def get_template_by_name(session: Session, name: str) -> Template | None:
+    return session.exec(select(Template).where(Template.name == name)).first()
+
 def get_templates_by_ids(session: Session, ids: List[int]) -> List[Template]:
     """Fetch multiple templates in a single query."""
     statement = select(Template).where(Template.id.in_(ids))
